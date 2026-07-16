@@ -400,5 +400,3 @@ generation.
 
 **Charles Lin**
 
-Computer Science graduate interested in Java, backend engineering, compilers,
-distributed systems, and software architecture.
