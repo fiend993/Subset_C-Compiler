@@ -1,0 +1,141 @@
+\documentclass{article}
+\title{Developers}
+\author{Charles Lin}
+
+\begin{document}
+
+    \maketitle
+
+    \section{Repository}
+    \subsection{This repository contain three directory:}
+    \begin{enumerate}
+        \item Documentation This include all the documentation for the project.
+        \\Include a README file for general question, and a Developer file introduce the repository and the purpose of each file.
+        \item Grading This directory reserve for grading purpose.
+        \item Source This directory is where the source code located, also include an Makefile for build and clean.
+    \end{enumerate}
+
+    \section{Phase 1}
+    \subsection{Main.java}
+    It contains the main, act as the entry for the program.\\
+    simple read the argument and print properly output.
+    \section{Phase 2}
+    \subsection{utilties.Token.java}
+    This Token class define an instance that contain four variable:
+    \begin{enumerate}
+        \item fileName which the original file that generate the token.
+        \item lineNumber the original line that token located.
+        \item tokenType the type of the token.
+        \item lexeme the lexeme of the token.
+    \end{enumerate}
+    By override toString() function of this instance, allow me easy to format properly output.
+    \\Also reserve for later stage of the project if need store the token as list.
+    \subsection{Lexer.java}
+    The Lexer class is the main feature implemented for phase 1.\\
+    This lexer class will take input for a file name, scan and tokenize it.\\ \\
+    \begin{enumerate}
+        \item TOKEN\_MAP This hashMap contain a string as key which represent the
+        two characters operator, keyword, or type; and integer type value that correspond of each key.
+        Allow me quick look up the type of each key.
+        \item static boolean encounterError and static string errorMessage are shared across the lexer class.
+        when encounter an error, allow lexer throw out exception, pass the proper error message, and trace back if it was recursively called
+        for include statement.
+        \item The scanFile() will initialize the process of scan the file.
+        \\It will catch if the encounterError is flagged. Once it detect the flag,
+        it will throw the exception and handle it.\\
+        This function control the flow of scan and tokenize the file.
+        \item The processLine() will called by scanFile for each line.\\
+        It will scan through the line, match each token by use regex expression.\\
+        And check if there is any error, once detect the error it will flagged encounterError and return the control back to scanFile().\\
+        If there is no error, it will generate output for each token either in output stream or output file.
+    \end{enumerate}
+    \subsection{Main.java}
+    In the phase 2, it update the input that will take, when in the mode 1 and supply with a file, it will create a lexer and start scan.
+
+    \section{Phase 3}
+    \subsection{CFG}
+    This is the context free program that I use to build my parser, it might not unambiguous, but the issue will handle by the code.\\
+    $Program \rightarrow Declaration Program $\\
+    $| FunctionPrototype Program$\\
+    $| FunctionDefinition Program$\\
+    $| StructDefinition Program$\\
+    $| \varepsilon$\\
+    $ListOfDeclaration \rightarrow Declaration | Declaration ListOfDeclaration$\\
+    $Declaration \rightarrow Type ListOfIdentifierDeclaration ;$\\
+    $FunctionPrototype \rightarrow Type Identifier ( ) ;$\\
+    $| Type Identifier ( ListOfParameter ) ;$\\
+    $FunctionDefinition \rightarrow Type Identifier ( ) \{ BlockStatement \}$ \\
+    $| Type Identifier ( ListOfParameter ) \{ BlockStatement \}$\\
+    $StructDefinition \rightarrow struct Identifier \{ \} ;$\\
+    $| struct Identifier \{ ListOfDeclaration \} ;$\\
+    $ListOfIdentifierDeclaration \rightarrow IdentifierDeclaration $\\
+    $| IdentifierDeclaration , ListOfIdentifierDeclaration$\\
+    $IdentifierDeclaration \rightarrow Identifier | Identifier [ Integer ]$\\
+    $| Identifier = Expression | Identifier [ Integer ] = Expression$\\
+    $Type \rightarrow void | char | int | float | struct$ \\//Note, the const can appear either before or after type keyword\\
+    $ListOfParameter \rightarrow Parameter | Parameter , ListOfParameter$\\
+    $Parameter \rightarrow Type Identifier | Type Identifier [ ]$\\
+    $BlockStatement \rightarrow ListOfDeclaration BlockStatement| ListOfStatement BlockStatement | \varepsilon$\\
+    $ListOfStatement \rightarrow Statement ListOfStatement | Statement$ \\
+    $Statement \rightarrow ;$\\
+    $| Expression ;$\\
+    $| break ;$\\
+    $| continue ;$\\
+    $| return ; | return Expression ;$\\
+    $| if ( Expression ) Statement | if ( Expression ) Statement else Statement$\\
+    $| for ( Expression ; Expression ; Expression )$ //Note all Expression right here are optional.\\
+    $| while ( Expression ) Statement$\\
+    $| do Statement while ( Expression ) ;$\\
+    $| \{ BlockStatement \}$\\
+    $ArgumentList \rightarrow Expression , ArgumentList | Expression$\\
+    $l-value \rightarrow Identifier . Identifier l-value | Identifier . Identifier [ Expression ]$\\
+    $AssignmentOperator \rightarrow = | += | -= | *= | /=$\\
+    $PostfixOperator \rightarrow ++ | -- | . Identifier | [ Expression ] | ( ArgumentList )$\\
+    $RelationalOperator \rightarrow < | > | <= | >=$\\
+    $AdditiveOperator \rightarrow + | -$\\
+    $MultiplicativeOperator \rightarrow * | / | \%$\\
+    $UnaryOperator \rightarrow ! | ~ | -$
+    $Expression \rightarrow AssignmentExpression$\\
+    $AssignmentExpression \rightarrow l-value AssignmentOperator Expression | conditionalExpression$\\
+    $ConditionalExpression \rightarrow LogicalOrExpression | LogicalOrExpression ? Expression : Expression$\\
+    $LogicalOrExpression \rightarrow LogicalAndExpression (|| LogicalAndExpression)*$ \\
+    $LogicalAndExpression \rightarrow BitwiseOrExpression (\&\& BitwiseOrExpression)*$\\
+    $BitwiseOrExpression \rightarrow BitwiseAndExpression (| BitwiseAndExpression)*$\\
+    $BitwiseAndExpression \rightarrow EqualityExpression (\& EqualityExpression)*$\\
+    $EqualityExpression \rightarrow RelationalExpression == RelationalExpression | RelationalExpression != RelationalExpression$\\
+    $RelationalExpression \rightarrow AdditiveExpression (RelationalOperator AdditiveExpression)*$\\
+    $AdditiveExpression \rightarrow MultiplicativeExpression (AdditiveOperator MultiplicativeExpression)*$\\
+    $MultiplicativeExpression \rightarrow UnaryExpression (MultiplicativeOperator UnaryExpression)*$\\
+    $UnaryExpression \rightarrow UnaryOperator UnaryExpression | ( Type ) UnaryExpression | PostfixExpression$\\
+    $PostFixExpression \rightarrow PrimaryExpression (PostfixOperator)*$\\
+    $PrimaryExpression \rightarrow Identifier | Literal | ( Expression )$\\
+    $Literal \rightarrow Integer | RealNumber | Char | String$\\
+
+    \subsection{Parser.java}
+    \begin{enumerate}
+        \item isInsideFunction, isInsideStruct, and isInsideParameterList are three global variable that use to track current scope.\\
+        \item a new parse obj take input a list of tokens(generate by lexer), and a file name(string).\\
+        \item The parse will scan through the list of token to check syntax and produce the final output.\\
+        \item match(String expect) consume token optionally.\\
+        \item expect(String expect) either match or panic.\\
+        \item panic() print the error and exit the program.\\
+        \item parseProgram() start parse.\\
+        \item printOutput() to generate output.\\
+    \end{enumerate}
+
+    \section{Phase 4}
+    The TypeChecker.java is based on the Parser.java but with modified implemented rules that check the type.\\
+    It used four hash maps:\\
+    globalVariable, functions, prototypes, and globalStruct.\\
+    And two stacks that will push a hashmap when we enter braces and pop when we leave the braces:\\
+    localVariable, localStruct.
+    To maintain a symbol table and track scope. \\
+    Also include new utilities class, Variable, Function, and Struct for meta info.
+
+    \section{Phase 5}
+    introduce many emit function to generate java assembly code. The emit function will be called and use during the parse process while the compiler consume the input file.\\
+
+    \section{Phase 6}
+    Continue on Phase 5 add branch control, spilt the old parseStatementBlock parse function into decoupling version.\\
+    TypeCheck.java is for Phase 5 and 6, TypeChecker2.java is for phase 4 trace back.\\
+\end{document}
